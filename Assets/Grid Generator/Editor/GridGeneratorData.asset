@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcce386a84718bb47a58d1fff5189f49, type: 3}
+  m_Name: GridGeneratorData
+  m_EditorClassIdentifier: 
+  GridName: RGB Grid
+  Row: 10
+  Column: 10
+  Size: 1
+  Gap: 0
+  Nodes:
+  - Name: Red Cube
+    Object: {fileID: 7813775804912632395, guid: 6a615fe5e042a6d46b8f3f9729a9a9a1, type: 3}
+    Size: 0
+  - Name: Green Cube
+    Object: {fileID: 2388504921402082930, guid: 0410d9cf61730c74bb4a02a4e4c3a53a, type: 3}
+    Size: 0
+  - Name: Blue Cube
+    Object: {fileID: 950787866668298283, guid: 0679fd2f3e0fbe049ac189b284761ab1, type: 3}
+    Size: 0
