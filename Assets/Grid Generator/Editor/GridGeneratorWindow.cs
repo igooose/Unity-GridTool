@@ -110,13 +110,16 @@ public class GridGeneratorWindow : EditorWindow
             for (int column = 0; column < _column.intValue; column++)
             {
                 int rngIndex = Random.Range(0, _nodes.arraySize);
-                Vector3 pos = new Vector3(row, 0, column);
+                Vector3 pos = new Vector3(((float)(-1 + _row.intValue)/2 - row) * _size.floatValue,
+                                0,
+                                ((float)(-1 + _column.intValue)/2 - column) * _size.floatValue);
 
                 GameObject node = (GameObject)Instantiate(_nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Object").objectReferenceValue, 
                                 pos,
                                 Quaternion.identity,
                                 parentObject);
                 node.name = _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Name").stringValue;
+                node.transform.localScale = Vector3.one * _size.floatValue * _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Size").floatValue;
             }
         }
     }
