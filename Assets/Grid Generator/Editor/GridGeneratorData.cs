@@ -6,7 +6,7 @@ public class GridNode
 {
     public string Name;
     public GameObject Object;
-    public int Size;
+    public float Size;
 }
 
 public class GridGeneratorData : ScriptableObject
@@ -14,7 +14,7 @@ public class GridGeneratorData : ScriptableObject
     public string GridName = "grid_name";
     public int Row = 6;
     public int Column = 6;
-    public int Size = 1;
-    public int Gap = 0;
+    public float Size = 1;
+    public float Gap = 0;
     public List<GridNode> Nodes;
 }

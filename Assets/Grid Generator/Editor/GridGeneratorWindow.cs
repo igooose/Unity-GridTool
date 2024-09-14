@@ -1,14 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 
-/*
-    to do:
-        - set position to center
-        - implement size and gap setting
-        - add preset feature
-        - add manual grid editing
-*/
-
 public class GridGeneratorWindow : EditorWindow
 {
     private static GridGeneratorData _data;
@@ -25,7 +17,7 @@ public class GridGeneratorWindow : EditorWindow
     public static void Init()
     {    
         GridGeneratorWindow window = GetWindow<GridGeneratorWindow>("Grid Generator");
-        window.minSize = new Vector2(240, 0);
+        window.minSize = new Vector2(360, 480);
         window.Show();
     }
 
@@ -58,8 +50,9 @@ public class GridGeneratorWindow : EditorWindow
         _gap = _serializedObject.FindProperty("Gap");
         _nodes = _serializedObject.FindProperty("Nodes");
 
-        EditorGUIUtility.labelWidth = 72;
+        EditorGUIUtility.labelWidth = 64;
 
+        // draw general setting
         EditorGUILayout.LabelField("Grid Setting", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(_gridName);
         EditorGUILayout.BeginHorizontal();
@@ -73,19 +66,39 @@ public class GridGeneratorWindow : EditorWindow
 
         EditorGUILayout.Space(10);
 
+        // draw nodes
         EditorGUILayout.LabelField("Nodes", EditorStyles.boldLabel);
-        _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(320));
-            
-            EditorGUILayout.PropertyField(_nodes);
-
+        _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(position.height-160));
+            if(_nodes.arraySize == 0)
+                EditorGUILayout.HelpBox("Currently there is no node available. Please add node by pressing [Add] button bellow.", MessageType.Warning);
+            for(int i = 0; i < _nodes.arraySize; i++)
+                DrawNode(i);
         EditorGUILayout.EndScrollView();
 
+        // draw buttons
+        EditorGUILayout.BeginHorizontal();
+            if(GUILayout.Button("Remove All"))
+                _nodes.ClearArray();
+            if(GUILayout.Button("Add"))
+                _nodes.arraySize++;
+        EditorGUILayout.EndHorizontal();
         if(GUILayout.Button("Generate"))
-        {
             GenerateGrid();
-        }
 
         _serializedObject.ApplyModifiedProperties();
+    }
+
+    private void DrawNode(int index)
+    {
+        EditorGUILayout.LabelField(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue, EditorStyles.boldLabel);
+        _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue = EditorGUILayout.TextField("Name", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue);
+        EditorGUILayout.BeginHorizontal();
+            _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField("Object", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue, typeof(GameObject), true);
+            _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue = EditorGUILayout.FloatField("Size", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue);
+        EditorGUILayout.EndHorizontal();
+        if(GUILayout.Button("Remove"))
+            _nodes.DeleteArrayElementAtIndex(index);
+        EditorGUILayout.Space();
     }
 
     private void GenerateGrid()
