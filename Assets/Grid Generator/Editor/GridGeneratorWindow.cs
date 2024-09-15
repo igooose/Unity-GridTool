@@ -170,12 +170,8 @@ public class GridGeneratorWindow : EditorWindow
                 int rngIndex = Random.Range(0, _nodes.arraySize);
                 float rngRate = (float)Random.Range(0, 100) / 100;
 
-                Debug.Log(rngRate, this);
-
                 while (rngRate > _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("rate").floatValue)
-                {
                     rngIndex = Random.Range(0, _nodes.arraySize);
-                }
 
                 Vector3 pos = new Vector3(((float)(-1 + _row.intValue)/2 - row) * _size.floatValue,
                                 0,
