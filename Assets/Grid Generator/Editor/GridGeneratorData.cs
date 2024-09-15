@@ -4,9 +4,10 @@ using UnityEngine;
 [System.Serializable]
 public class GridNode
 {
-    public string Name;
-    public GameObject Object;
-    public float Size;
+    public string name;
+    public GameObject nodeObject;
+    public float size;
+    public float rate;
 }
 
 public class GridGeneratorData : ScriptableObject

@@ -75,7 +75,7 @@ public class GridGeneratorWindow : EditorWindow
         _nodesFoldout.boolValue = EditorGUILayout.Foldout(_nodesFoldout.boolValue, new GUIContent("Node List"));
         if(_nodesFoldout.boolValue)
         {
-            _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(position.height-190));
+            _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(position.height-230));
                 if(_nodes.arraySize == 0)
                     EditorGUILayout.HelpBox("Currently there is no node available. Please add node by pressing [Add] button bellow.", MessageType.Warning);
                 for(int i = 0; i < _nodes.arraySize; i++)
@@ -84,6 +84,9 @@ public class GridGeneratorWindow : EditorWindow
         }
 
         EditorGUILayout.Space(10);
+
+        if(CheckNonOneRate())
+            EditorGUILayout.HelpBox("CANNOT GENERATE GRID. There is no node with [Rate = 1] detected. Please set a node's Rate value to 1 at least one node.", MessageType.Error);
 
         // draw buttons
         EditorGUIUtility.labelWidth = 136;
@@ -100,17 +103,28 @@ public class GridGeneratorWindow : EditorWindow
         _serializedObject.ApplyModifiedProperties();
     }
 
+    private bool CheckNonOneRate()
+    {
+        for (int i = 0; i < _nodes.arraySize; i++)
+        {
+            if(_nodes.GetArrayElementAtIndex(i).FindPropertyRelative("rate").floatValue == 1)
+                return false;
+        }
+        return true;
+    }
+
     private void DrawNode(int index)
     {
-        if(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue != "")
-            EditorGUILayout.LabelField(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue, EditorStyles.label);
+        if(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("name").stringValue != "")
+            EditorGUILayout.LabelField(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("name").stringValue, EditorStyles.label);
         else
             EditorGUILayout.LabelField("Node", EditorStyles.boldLabel);
 
-        _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue = EditorGUILayout.TextField("Name", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue);
+        _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("name").stringValue = EditorGUILayout.TextField("Name", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("name").stringValue);
+        _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("nodeObject").objectReferenceValue = EditorGUILayout.ObjectField("Object", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("nodeObject").objectReferenceValue, typeof(GameObject), true);
         EditorGUILayout.BeginHorizontal();
-            _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField("Object", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue, typeof(GameObject), true);
-            _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue = EditorGUILayout.FloatField("Size", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue);
+            _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("size").floatValue = EditorGUILayout.FloatField("Size", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("size").floatValue);
+            _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("rate").floatValue = EditorGUILayout.Slider("Rate", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("rate").floatValue, 0, 1);
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
             if(GUILayout.Button("Remove"))
@@ -124,21 +138,26 @@ public class GridGeneratorWindow : EditorWindow
     private void AddNode()
     {
         _nodes.arraySize++;
-        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Name").stringValue = "";
-        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Object").objectReferenceValue = null;
-        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Size").floatValue = 1;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("name").stringValue = "";
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("nodeObject").objectReferenceValue = null;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("size").floatValue = 1;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("rate").floatValue = 1;
     }
 
     private void DuplicateNode(int index)
     {
         _nodes.arraySize++;
-        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Name").stringValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue;
-        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Object").objectReferenceValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue;
-        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Size").floatValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("name").stringValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("name").stringValue;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("nodeObject").objectReferenceValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("nodeObject").objectReferenceValue;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("size").floatValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("size").floatValue;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("rate").floatValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("rate").floatValue;
     }
 
     private void GenerateGrid()
     {
+        // to prevent infinity loop when generating grid
+        if(CheckNonOneRate()) return;
+
         if(_overwriteExisted.boolValue && GameObject.Find(_gridName.stringValue))
             DestroyImmediate(GameObject.Find(_gridName.stringValue).gameObject);
 
@@ -149,20 +168,29 @@ public class GridGeneratorWindow : EditorWindow
             for (int column = 0; column < _column.intValue; column++)
             {
                 int rngIndex = Random.Range(0, _nodes.arraySize);
+                float rngRate = (float)Random.Range(0, 100) / 100;
+
+                Debug.Log(rngRate, this);
+
+                while (rngRate > _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("rate").floatValue)
+                {
+                    rngIndex = Random.Range(0, _nodes.arraySize);
+                }
+
                 Vector3 pos = new Vector3(((float)(-1 + _row.intValue)/2 - row) * _size.floatValue,
                                 0,
                                 ((float)(-1 + _column.intValue)/2 - column) * _size.floatValue);
 
-                GameObject node = (GameObject)Instantiate(_nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Object").objectReferenceValue, 
+                GameObject node = (GameObject)Instantiate(_nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("nodeObject").objectReferenceValue, 
                                 pos,
                                 Quaternion.identity,
                                 parentObject);
-                if(_nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Name").stringValue != "")
-                    node.name = _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Name").stringValue;
+                if(_nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("name").stringValue != "")
+                    node.name = _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("name").stringValue;
                 else
                     node.name = "Node";
 
-                node.transform.localScale = Vector3.one * _size.floatValue * _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Size").floatValue;
+                node.transform.localScale = Vector3.one * _size.floatValue * _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("size").floatValue;
             }
         }
     }
