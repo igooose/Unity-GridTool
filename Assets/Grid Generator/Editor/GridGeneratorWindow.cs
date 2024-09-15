@@ -13,6 +13,9 @@ public class GridGeneratorWindow : EditorWindow
     private SerializedProperty _gap;
     private SerializedProperty _nodes;
 
+    private bool _nodesFoldout;
+    private bool _overwriteExistedGrid;
+
     [MenuItem("Window/Grid Tool/Generator")]
     public static void Init()
     {    
@@ -67,15 +70,22 @@ public class GridGeneratorWindow : EditorWindow
         EditorGUILayout.Space(10);
 
         // draw nodes
-        EditorGUILayout.LabelField("Nodes", EditorStyles.boldLabel);
-        _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(position.height-160));
-            if(_nodes.arraySize == 0)
-                EditorGUILayout.HelpBox("Currently there is no node available. Please add node by pressing [Add] button bellow.", MessageType.Warning);
-            for(int i = 0; i < _nodes.arraySize; i++)
-                DrawNode(i);
-        EditorGUILayout.EndScrollView();
+        _nodesFoldout = EditorGUILayout.Foldout(_nodesFoldout, "Node List");
+        if(_nodesFoldout)
+        {
+            _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(position.height-160));
+                if(_nodes.arraySize == 0)
+                    EditorGUILayout.HelpBox("Currently there is no node available. Please add node by pressing [Add] button bellow.", MessageType.Warning);
+                for(int i = 0; i < _nodes.arraySize; i++)
+                    DrawNode(i);
+            EditorGUILayout.EndScrollView();
+        }
+
+        EditorGUILayout.Space(10);
 
         // draw buttons
+        EditorGUIUtility.labelWidth = 136;
+        _overwriteExistedGrid = EditorGUILayout.Toggle("Overwrite existed Grid?", _overwriteExistedGrid);
         EditorGUILayout.BeginHorizontal();
             if(GUILayout.Button("Remove All"))
                 _nodes.ClearArray();
@@ -91,7 +101,7 @@ public class GridGeneratorWindow : EditorWindow
     private void DrawNode(int index)
     {
         if(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue != "")
-            EditorGUILayout.LabelField(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue, EditorStyles.label);
         else
             EditorGUILayout.LabelField("Node", EditorStyles.boldLabel);
 
@@ -127,6 +137,9 @@ public class GridGeneratorWindow : EditorWindow
 
     private void GenerateGrid()
     {
+        if(_overwriteExistedGrid && GameObject.Find(_gridName.stringValue))
+            DestroyImmediate(GameObject.Find(_gridName.stringValue).gameObject);
+
         Transform parentObject = new GameObject(_gridName.stringValue).transform;
 
         for (int row = 0; row < _row.intValue; row++)
