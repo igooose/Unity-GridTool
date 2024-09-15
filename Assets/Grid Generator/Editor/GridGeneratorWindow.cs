@@ -13,7 +13,7 @@ public class GridGeneratorWindow : EditorWindow
     private SerializedProperty _gap;
     private SerializedProperty _nodes;
 
-    [MenuItem("Window/Grid Generator")]
+    [MenuItem("Window/Grid Tool/Generator")]
     public static void Init()
     {    
         GridGeneratorWindow window = GetWindow<GridGeneratorWindow>("Grid Generator");
@@ -90,7 +90,11 @@ public class GridGeneratorWindow : EditorWindow
 
     private void DrawNode(int index)
     {
-        EditorGUILayout.LabelField(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue, EditorStyles.boldLabel);
+        if(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue != "")
+            EditorGUILayout.LabelField(_nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue, EditorStyles.boldLabel);
+        else
+            EditorGUILayout.LabelField("Node", EditorStyles.boldLabel);
+
         _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue = EditorGUILayout.TextField("Name", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue);
         EditorGUILayout.BeginHorizontal();
             _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField("Object", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue, typeof(GameObject), true);
@@ -138,7 +142,11 @@ public class GridGeneratorWindow : EditorWindow
                                 pos,
                                 Quaternion.identity,
                                 parentObject);
-                node.name = _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Name").stringValue;
+                if(_nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Name").stringValue != "")
+                    node.name = _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Name").stringValue;
+                else
+                    node.name = "Node";
+
                 node.transform.localScale = Vector3.one * _size.floatValue * _nodes.GetArrayElementAtIndex(rngIndex).FindPropertyRelative("Size").floatValue;
             }
         }
