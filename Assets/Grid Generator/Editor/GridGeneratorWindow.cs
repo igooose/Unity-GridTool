@@ -79,8 +79,8 @@ public class GridGeneratorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
             if(GUILayout.Button("Remove All"))
                 _nodes.ClearArray();
-            if(GUILayout.Button("Add"))
-                _nodes.arraySize++;
+            if (GUILayout.Button("Add"))
+                AddNode();
         EditorGUILayout.EndHorizontal();
         if(GUILayout.Button("Generate"))
             GenerateGrid();
@@ -103,6 +103,14 @@ public class GridGeneratorWindow : EditorWindow
                 DuplicateNode(index);
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.Space();
+    }
+
+    private void AddNode()
+    {
+        _nodes.arraySize++;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Name").stringValue = "";
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Object").objectReferenceValue = null;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Size").floatValue = 1;
     }
 
     private void DuplicateNode(int index)
