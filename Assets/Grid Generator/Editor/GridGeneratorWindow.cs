@@ -96,9 +96,21 @@ public class GridGeneratorWindow : EditorWindow
             _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField("Object", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue, typeof(GameObject), true);
             _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue = EditorGUILayout.FloatField("Size", _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue);
         EditorGUILayout.EndHorizontal();
-        if(GUILayout.Button("Remove"))
-            _nodes.DeleteArrayElementAtIndex(index);
+        EditorGUILayout.BeginHorizontal();
+            if(GUILayout.Button("Remove"))
+                _nodes.DeleteArrayElementAtIndex(index);
+            if(GUILayout.Button("Duplicate"))
+                DuplicateNode(index);
+        EditorGUILayout.EndHorizontal();
         EditorGUILayout.Space();
+    }
+
+    private void DuplicateNode(int index)
+    {
+        _nodes.arraySize++;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Name").stringValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Name").stringValue;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Object").objectReferenceValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Object").objectReferenceValue;
+        _nodes.GetArrayElementAtIndex(_nodes.arraySize - 1).FindPropertyRelative("Size").floatValue = _nodes.GetArrayElementAtIndex(index).FindPropertyRelative("Size").floatValue;
     }
 
     private void GenerateGrid()
