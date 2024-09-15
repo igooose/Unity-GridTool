@@ -4,8 +4,8 @@ using UnityEditor;
 public class GridGeneratorWindow : EditorWindow
 {
     private static GridGeneratorData _data;
-
     private SerializedObject _serializedObject;
+
     private SerializedProperty _gridName;
     private SerializedProperty _row;
     private SerializedProperty _column;
@@ -13,8 +13,8 @@ public class GridGeneratorWindow : EditorWindow
     private SerializedProperty _gap;
     private SerializedProperty _nodes;
 
-    private bool _nodesFoldout;
-    private bool _overwriteExistedGrid;
+    private SerializedProperty _nodesFoldout;
+    private SerializedProperty _overwriteExisted;
 
     [MenuItem("Window/Grid Tool/Generator")]
     public static void Init()
@@ -46,12 +46,14 @@ public class GridGeneratorWindow : EditorWindow
         _serializedObject = new SerializedObject(_data);
         _serializedObject.Update();
 
-        _gridName = _serializedObject.FindProperty("GridName");
-        _row = _serializedObject.FindProperty("Row");
-        _column = _serializedObject.FindProperty("Column");
-        _size = _serializedObject.FindProperty("Size");
-        _gap = _serializedObject.FindProperty("Gap");
-        _nodes = _serializedObject.FindProperty("Nodes");
+        _gridName = _serializedObject.FindProperty("gridName");
+        _row = _serializedObject.FindProperty("row");
+        _column = _serializedObject.FindProperty("column");
+        _size = _serializedObject.FindProperty("size");
+        _gap = _serializedObject.FindProperty("gap");
+        _nodes = _serializedObject.FindProperty("nodes");
+        _nodesFoldout = _serializedObject.FindProperty("nodeFoldout");
+        _overwriteExisted = _serializedObject.FindProperty("overwriteExisted");
 
         EditorGUIUtility.labelWidth = 64;
 
@@ -70,10 +72,10 @@ public class GridGeneratorWindow : EditorWindow
         EditorGUILayout.Space(10);
 
         // draw nodes
-        _nodesFoldout = EditorGUILayout.Foldout(_nodesFoldout, "Node List");
-        if(_nodesFoldout)
+        _nodesFoldout.boolValue = EditorGUILayout.Foldout(_nodesFoldout.boolValue, new GUIContent("Node List"));
+        if(_nodesFoldout.boolValue)
         {
-            _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(position.height-160));
+            _scrollView = EditorGUILayout.BeginScrollView(_scrollView, GUILayout.Width(position.width), GUILayout.Height(position.height-190));
                 if(_nodes.arraySize == 0)
                     EditorGUILayout.HelpBox("Currently there is no node available. Please add node by pressing [Add] button bellow.", MessageType.Warning);
                 for(int i = 0; i < _nodes.arraySize; i++)
@@ -85,7 +87,7 @@ public class GridGeneratorWindow : EditorWindow
 
         // draw buttons
         EditorGUIUtility.labelWidth = 136;
-        _overwriteExistedGrid = EditorGUILayout.Toggle("Overwrite existed Grid?", _overwriteExistedGrid);
+        EditorGUILayout.PropertyField(_overwriteExisted, new GUIContent("Overwrite existed Grid?"));
         EditorGUILayout.BeginHorizontal();
             if(GUILayout.Button("Remove All"))
                 _nodes.ClearArray();
@@ -137,7 +139,7 @@ public class GridGeneratorWindow : EditorWindow
 
     private void GenerateGrid()
     {
-        if(_overwriteExistedGrid && GameObject.Find(_gridName.stringValue))
+        if(_overwriteExisted.boolValue && GameObject.Find(_gridName.stringValue))
             DestroyImmediate(GameObject.Find(_gridName.stringValue).gameObject);
 
         Transform parentObject = new GameObject(_gridName.stringValue).transform;

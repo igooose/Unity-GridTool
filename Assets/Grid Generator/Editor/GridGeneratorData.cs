@@ -11,10 +11,13 @@ public class GridNode
 
 public class GridGeneratorData : ScriptableObject
 {
-    public string GridName = "grid_name";
-    public int Row = 6;
-    public int Column = 6;
-    public float Size = 1;
-    public float Gap = 0;
-    public List<GridNode> Nodes;
+    public string gridName = "grid_name";
+    public int row = 6;
+    public int column = 6;
+    public float size = 1;
+    public float gap = 0;
+    public List<GridNode> nodes;
+
+    public bool nodeFoldout;
+    public bool overwriteExisted;
 }
